@@ -196,14 +196,3 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/classification.ipy
 
 ---
 
-## Reproducibility & Anti-Leakage Protocol
-1. **Global Seed**: `RANDOM_STATE = 42` is enforced across all train/test splits, cross-validation folds, and stochastic estimators.
-2. **Leak-Free Pipelines**: All scaling (`StandardScaler`) and encoding (`OneHotEncoder`) transformers are wrapped inside `sklearn.pipeline.Pipeline` objects and fitted **strictly on the training partition** of each fold during CV and grid search.
-3. **Dense Representation for GaussianNB**: `OneHotEncoder(sparse_output=False)` produces dense arrays natively compatible with `GaussianNB`.
-4. **Target Isolation**: Target quantile bins used for regression stratified splitting are constructed temporarily and dropped immediately prior to feature transformation.
-
----
-
-## AI Assistance Disclosure
-In accordance with academic guidelines (Section 7.5 of course rubrics):
-Generative AI assistance (Google Antigravity / Gemini) was utilized strictly for codebase scaffolding, markdown formatting, and pipeline architecture. All exploratory data analyses, statistical observations, machine learning implications, and metric interpretations are derived directly from actual model execution on the official datasets.
