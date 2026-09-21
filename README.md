@@ -18,7 +18,7 @@ The project adheres strictly to the official course rubric, emphasizing data int
 ## Review 1 Scope
 Review 1 encompasses the complete implementation and evaluation of:
 - **Full Regression Track**:
-  - Systematic audit and complete EDA across every predictor feature (9 numerical, 3 categorical, target, and calendar continuity).
+  - Systematic audit and complete EDA across every predictor feature (9 numerical, 3 categorical, target, calendar continuity audit, and Date feature coverage visualization).
   - Data cleaning, outlier investigation with domain retention justification, and quantile-stratified train/test splitting.
   - Feature engineering (cyclical hour harmonics, calendar components, rush-hour indicator) with zero data leakage.
   - Implementation and benchmarking of all **10 required regression algorithms** on a single held-out test split.
@@ -27,7 +27,7 @@ Review 1 encompasses the complete implementation and evaluation of:
   - 5-fold cross-validation on the training set reporting both Baseline Top Two (Random Forest + Gradient Boosting) and Post-Tuning Top Two (Random Forest + SVR).
   - Diagnostic visualizations (Predicted vs. Actual with $y=x$, Residual plot with variance analysis, and Tree feature importances).
 - **Classification Track (Part A)**:
-  - Systematic audit and complete EDA across all 16 predictor features (7 numerical, 9 categorical, and target).
+  - Systematic audit and complete EDA across all 16 predictor features (7 numerical, 9 categorical, and target), including at least 2 feature-target scatter plots with jitter and transparency (Age and Duration vs. Target).
   - Systematic IQR outlier audit table and boxplots covering all 7 numerical features with domain-motivated retention justification.
   - Evaluation of class imbalance (88.30% non-subscribers vs. 11.70% subscribers) and operational limitations of the call `duration` feature.
   - Stratified 80:20 train/test splitting and dense one-hot encoding for algorithm compatibility.
@@ -108,7 +108,7 @@ All ten baseline algorithms were trained on the identical training partition (7,
 ### Hyperparameter Tuning Results
 Hyperparameter tuning was executed via `GridSearchCV` inside leak-free `Pipeline` architectures fitting strictly on `X_train_fe`:
 - **Support Vector Regressor (SVR)**: Tuning $C=1000, \epsilon=20.0$ lifted test $R^2$ from **0.2794 to 0.9046** ($\Delta R^2 = +0.6253$, $\text{RMSE}$ dropped from 547.03 to 198.99), resolving the default penalty under-scaling.
-- **Random Forest Regressor**: Tuning `n_estimators=200`, `max_depth=None`, `min_samples_split=2` achieved test $R^2 = 0.9434$ ($\text{RMSE} = 153.36$, $\text{MAE} = 93.22$).
+- **Random Forest Regressor**: Tuning `n_estimators=200`, `max_depth=None`, `min_samples_split=2` achieved test $R^2 = 0.9434$ ($\text{RMSE} = 153.36$, $\text{MAE} = 93.26$).
 
 ### 5-Fold Cross-Validation on Training Split
 To prevent leakage, each cross-validation fold fits the `preprocessor` independently on the training slice:
