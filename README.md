@@ -29,7 +29,7 @@ This repository contains the official Machine Learning Capstone Project submissi
 | **C2** | **README & Project Documentation** | **1** | Comprehensive repository documentation, dataset citations, architecture schematics, and empirical results tables. | **PASS** |
 | **C3** | **Meaningful Git History & Dependencies** | **1** | Granular Git milestones corresponding to verified technical tasks; pinned `requirements.txt` including `openpyxl`. | **PASS** |
 | **Bonus 1** | **Working Interactive GUI** | **+1** | Fully functional Streamlit application (`app/app.py`) accepting user inputs, validating features, loading serialized pipeline artifact, and returning real-time predictions with probability gauges and duration caveats. | **PASS** |
-| **Bonus 2** | **Verified Public Web Deployment** | **+1** | Prepared for zero-configuration deployment on Streamlit Community Cloud with portable paths, root `requirements.txt`, and verified joblib deserialization. | **READY / VERIFIED** |
+| **Bonus 2** | **Verified Public Web Deployment** | **+1** | Fully configured for one-click deployment on Render Web Services via declarative root Blueprint (`render.yaml`), using Free plan (Singapore region, Python 3.11, `$PORT` binding, and `/_stcore/health` check). | **READY / CONFIGURED** |
 
 ---
 
@@ -37,6 +37,8 @@ This repository contains the official Machine Learning Capstone Project submissi
 ```text
 ML Capstone/
 ├── .gitignore                          # Excludes cache, checkpoints, temporary artifacts
+├── .python-version                     # Pinned Python version (3.11) for cloud runtimes
+├── render.yaml                         # Declarative Render Blueprint specification
 ├── README.md                           # Master capstone documentation (Review 1 & Review 2)
 ├── requirements.txt                    # Pinned production runtime dependencies
 │
@@ -242,28 +244,70 @@ Evaluated on the quantile-stratified held-out test partition ($N = 1,752$):
 
 ### Interactive Streamlit Application (`app/app.py`)
 - **Framework**: Streamlit 1.51.0
-- **Serialized Model**: `models/bank_marketing_pipeline.joblib` (Self-contained pipeline containing `BankFeatureEngineering`, `ColumnTransformer`, and champion `GradientBoostingClassifier`).
+- **Serialized Model Artifact**: `models/bank_marketing_pipeline.joblib` (131.2 KB). Contains the end-to-end inference pipeline: custom transformer `BankFeatureEngineering` (from `app/bank_features.py`), preprocessor `ColumnTransformer` (scaling & one-hot encoding), and champion `MLPClassifier(activation='tanh', hidden_layer_sizes=(64, 32))`.
 - **Features**:
   - Full client profile configuration (Demographics, Financial History, Campaign Context, Historical Outreach).
   - Real-time term deposit conversion inference with probability gauge ($P(\text{Yes})$ vs $P(\text{No})$).
-  - Prominent operational caveat explaining the ex-post nature of call duration.
+  - Prominent operational caveat explaining the ex-post diagnostic nature of call duration.
   - Comprehensive methodology and benchmark tab.
 
 ### Running the Web Application Locally
+From the repository root (`ML Capstone/`):
 ```bash
-# Launch Streamlit web interface
+# Launch Streamlit web interface locally
 streamlit run app/app.py
 ```
-The application will launch on `http://localhost:8501`.
+The application will launch locally at `http://localhost:8501`.
 
-### Public Deployment Guide (Streamlit Community Cloud)
-The repository is engineered for zero-configuration deployment on **Streamlit Community Cloud**:
-1. Fork or push this repository to GitHub.
-2. Sign in to [Streamlit Community Cloud](https://share.streamlit.io/).
-3. Click **New app**, select this repository (`Machine-Learning-Capstone-Project`), branch `main`, and set **Main file path** to `app/app.py`.
-4. Streamlit Cloud automatically reads the root `requirements.txt` and starts the application.
-- **Deployment Status**: Production artifact serialized, portable relative paths verified, headless server startup verified.
-- **Public URL**: *Available upon repository owner linking to Streamlit Community Cloud*.
+---
+
+### Public Cloud Deployment Guide (Render Web Services — Free Plan)
+The application is pre-configured for deployment on **Render Web Services** using a declarative Infrastructure-as-Code Blueprint (`render.yaml`).
+
+#### Service Specifications:
+- **Hosting Platform**: Render Web Services ([render.com](https://render.com))
+- **Environment**: Native Python Runtime (`PYTHON_VERSION=3.11.9`)
+- **Plan**: `free` (Render Free Web Service)
+- **Region**: `singapore`
+- **Build Command**: `pip install -r requirements.txt`
+- **Start Command**: `python -m streamlit run app/app.py --server.address 0.0.0.0 --server.port $PORT`
+- **Health Check Endpoint**: `/_stcore/health` (verified HTTP 200 OK)
+
+#### Free-Tier Cold-Start Limitation:
+> [!NOTE]
+> **Free-Tier Inactivity Spin-Down**:
+> Render's Free tier automatically spins down web services after **15 minutes of inactivity** to conserve resources. Upon receiving a new incoming HTTP request, the container automatically spins up within **~50 seconds**, after which it serves requests with instant sub-second response times.
+
+#### Step-by-Step Render Deployment Instructions:
+
+**Method A: One-Click Blueprint Deployment (Recommended)**
+1. Sign in to your [Render Dashboard](https://dashboard.render.com/) with your GitHub account (`Ne-Ran`).
+2. Click **New +** in the top navigation bar and select **Blueprint**.
+3. Connect your GitHub repository: `Ne-Ran/Machine-Learning-Capstone-Project`.
+4. Render will automatically detect and parse [`render.yaml`](render.yaml):
+   - Service Name: `bank-marketing-predictor`
+   - Runtime: `Python` (pinned to 3.11.9)
+   - Plan: `Free`
+   - Region: `Singapore`
+5. Click **Apply**. Render will automatically provision the container, execute `pip install -r requirements.txt`, verify the `/_stcore/health` endpoint, and launch your live service.
+
+**Method B: Manual Web Service Creation**
+1. In Render Dashboard, click **New +** $\rightarrow$ **Web Service**.
+2. Connect `Ne-Ran/Machine-Learning-Capstone-Project`, branch `main`.
+3. Configure the following fields:
+   - **Name**: `bank-marketing-predictor`
+   - **Region**: `Singapore`
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python -m streamlit run app/app.py --server.address 0.0.0.0 --server.port $PORT`
+   - **Instance Type**: `Free`
+4. Under **Advanced** $\rightarrow$ **Add Environment Variable**:
+   - Key: `PYTHON_VERSION`, Value: `3.11.9`
+   - **Health Check Path**: `/_stcore/health`
+5. Click **Deploy Web Service**.
+
+- **Deployment Status**: Blueprint verified, portable paths verified, model deserialization verified, local health check verified.
+- **Public URL**: *Generated upon initial deployment in Render Dashboard (e.g. `https://bank-marketing-predictor.onrender.com`)*.
 
 ---
 

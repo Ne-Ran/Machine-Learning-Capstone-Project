@@ -13,15 +13,22 @@ import joblib
 # Ensure repository root is on sys.path so BankFeatureEngineering can be unpickled
 app_dir = Path(__file__).resolve().parent
 repo_root = app_dir.parent
-if str(repo_root) not in sys.path:
-    sys.path.insert(0, str(repo_root))
-if str(app_dir) not in sys.path:
-    sys.path.insert(0, str(app_dir))
 
-# Import the custom transformer class
+if str(repo_root) in sys.path:
+    sys.path.remove(str(repo_root))
+sys.path.insert(0, str(repo_root))
+
+if str(app_dir) not in sys.path:
+    sys.path.append(str(app_dir))
+
+# Import and alias custom transformer so joblib unpickling resolves under either namespace
 try:
+    import app.bank_features
+    sys.modules['bank_features'] = app.bank_features
     from app.bank_features import BankFeatureEngineering
 except ImportError:
+    import bank_features
+    sys.modules['app.bank_features'] = bank_features
     from bank_features import BankFeatureEngineering
 
 # Streamlit Page Configuration
