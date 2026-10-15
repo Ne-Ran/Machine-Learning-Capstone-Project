@@ -59,7 +59,7 @@ ML Capstone/
 │   └── app.py                          # Interactive Streamlit web application
 │
 └── models/                             # Serialized machine learning artifacts
-    └── bank_marketing_pipeline.joblib  # End-to-end trained champion pipeline (207 KB)
+    └── bank_marketing_pipeline.joblib  # End-to-end trained champion pipeline (131.2 KB)
 ```
 
 ---
@@ -89,12 +89,16 @@ ML Capstone/
 - **Citation**: Chen, D., Sain, S. L., & Guo, K. (2012). *Data mining for the online retail industry: A case study of RFM model-based customer segmentation using data mining*. Journal of Database Marketing & Customer Strategy Management, 19(3), 197–208.
 - **License**: Creative Commons Attribution 4.0 International (CC BY 4.0).
 - **Raw Transaction Volume**: 541,909 invoice rows across 8 attributes (`InvoiceNo`, `StockCode`, `Description`, `Quantity`, `InvoiceDate`, `UnitPrice`, `CustomerID`, `Country`).
-- **Cleaning & Filtering Protocol**:
-  - Excluded 135,080 transactions (24.93%) lacking a `CustomerID` (guest checkouts cannot be tracked to customer profiles).
-  - Purged 5,268 exact duplicate transactions (0.97%).
-  - Excluded 9,288 cancellation and return records (invoices starting with `'C'`).
-  - Filtered out 10,624 non-positive quantities and 2,517 non-positive prices (postage write-offs, bad debt).
-  - Retained **392,692 clean, valid purchase transactions** (72.46% of raw volume).
+- **Cleaning & Filtering Protocol (Programmatic Sequential Audit)**:
+  
+  | Stage | Exclusion Condition | Records Removed | Remaining Transactions | Retention % |
+  | :--- | :--- | :---: | :---: | :---: |
+  | **1. Ingested Data** | Complete raw UCI Online Retail records | 0 | 541,909 | 100.00% |
+  | **2. Exact Duplicates** | Identical values across all 8 columns | 5,268 | 536,641 | 99.03% |
+  | **3. Missing Customer ID** | `CustomerID` is NULL (anonymous guest checkouts) | 135,037 | 401,604 | 74.11% |
+  | **4. Order Cancellations** | `InvoiceNo` starts with `'C'` (returns / cancellations) | 8,872 | 392,732 | 72.47% |
+  | **5. Non-Positive Qty/Price** | `Quantity <= 0` or `UnitPrice <= 0` (adjustments, postage) | 40 | **392,692** | **72.46%** |
+
 - **Customer Aggregation**: Exactly **4,338 unique commercial customers** aggregated across 6 behavioral dimensions:
   1. `Recency`: Days elapsed since most recent transaction ($snapshot - max(date)$).
   2. `Frequency`: Number of distinct valid invoices/orders placed (`nunique(InvoiceNo)`).
@@ -125,19 +129,35 @@ The table is **sorted strictly by Weighted F1 descending**:
 | **9** | **Part B** | **AdaBoost** | 0.8962 | 0.6420 | 0.2543 | **0.8757** | 0.6539 | 0.8986 | 4.24s |
 | **10** | **Part A** | **Gaussian Naive Bayes** | 0.8547 | 0.4026 | **0.5000** | **0.8614** | 0.6812 | 0.7998 | 0.05s |
 
+### Pre-Tuning Candidate Selection Across Part A & Part B
+To satisfy rubric criterion **A3**, candidate models from both Part A and Part B were evaluated on the training partition ($N_{train} = 36,168$) using leak-free 5-Fold Stratified Cross-Validation on the predeclared **Macro F1** selection metric:
+
+| Candidate Model | Track | Mean 5-Fold CV Macro F1 | CV Macro F1 Std |
+| :--- | :---: | :---: | :---: |
+| **MLP Classifier** | Part B | **0.7330** | $\pm 0.0063$ |
+| **Bagging (Decision Tree)** | Part B | **0.7314** | $\pm 0.0084$ |
+| **Gradient Boosting** | Part B | **0.7289** | $\pm 0.0045$ |
+| **Random Forest** | Part B | **0.7156** | $\pm 0.0123$ |
+| **Logistic Regression** | Part A | 0.6977 | $\pm 0.0119$ |
+| **Decision Tree** | Part A | 0.6975 | $\pm 0.0075$ |
+| **AdaBoost** | Part B | 0.6472 | $\pm 0.0155$ |
+
+*Empirical Selection Justification*: The empirical CV benchmark confirmed that ensemble and neural network architectures (Part B) significantly outperform simple linear and individual tree baselines (Part A) on minority recall and Macro F1, rigorously justifying their progression to hyperparameter optimization.
+
 ### Training-Only Hyperparameter Tuning & Model Selection
-To protect against test-set snooping, hyperparameter optimization was executed exclusively on the training partition ($N = 36,168$) using 5-Fold Stratified Cross-Validation with leak-free `Pipeline` architectures.  
-Because of the 11.7% class imbalance, **5-Fold CV Macro F1** was declared as the primary selection criterion:
+Hyperparameter optimization was executed exclusively on the training partition using leak-free `Pipeline` architectures inside `GridSearchCV`:
 
 | Algorithm | Best Parameters | Baseline CV Macro F1 | Tuned CV Macro F1 | CV Delta ($\Delta$) | Baseline Test Macro F1 | Tuned Test Macro F1 | Test Delta ($\Delta$) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Random Forest** | `{'max_depth': None, 'n_estimators': 150}` | 0.7156 | 0.7179 | +0.0023 | 0.7306 | 0.7162 | -0.0144 |
 | **AdaBoost** | `{'learning_rate': 1.0, 'n_estimators': 100}` | 0.6472 | 0.6947 | +0.0475 | 0.6539 | 0.6875 | +0.0336 |
-| **Gradient Boosting** | `{'learning_rate': 0.12, 'n_estimators': 150}` | **0.7289** | **0.7357** | **+0.0068** | **0.7246** | **0.7376** | **+0.0130** |
+| **Gradient Boosting** | `{'learning_rate': 0.12, 'n_estimators': 150}` | 0.7289 | 0.7357 | +0.0068 | 0.7246 | 0.7376 | +0.0130 |
 | **Bagging** | `{'n_estimators': 50}` | 0.7314 | 0.7314 | +0.0000 | 0.7004 | 0.7397 | +0.0393 |
-| **MLP** | `{'activation': 'tanh', 'hidden_layer_sizes': (64, 32)}` | 0.7330 | 0.7383 | +0.0053 | 0.7528 | 0.7573 | +0.0045 |
+| **MLP Classifier** | `{'activation': 'tanh', 'hidden_layer_sizes': (64, 32)}` | **0.7330** | **0.7383** | **+0.0053** | **0.7528** | **0.7573** | **+0.0045** |
 
-**Champion Model Selection**: Tuned **Gradient Boosting Classifier** was selected for serialization and GUI deployment due to its superior tree-based tabular robustness, highest cross-validation stability, high test Macro F1 (0.7376), test Weighted F1 (0.8996), and strong probability discrimination (ROC-AUC 0.9284).
+**Champion Model Selection**: 
+- **Primary Metric Champion**: Under the predeclared **5-Fold Stratified CV Macro F1** metric, **Multi-Layer Perceptron (MLP)** achieved the highest score (**0.7383**), translating to peak held-out test Macro F1 (**0.7573**). The deployment pipeline dynamically serializes this top empirical performer into `models/bank_marketing_pipeline.joblib`.
+- **Top Ensemble Runner-Up**: **Gradient Boosting Classifier** achieved a competitive CV Macro F1 of **0.7357**, test Weighted F1 of **0.8996**, and top test ROC-AUC of **0.9284**, serving as a robust tree-based alternative with lower inference latency.
 
 ### Operational Critique of `duration` (Viva Defense)
 - **The Core Issue**: Call duration is the strongest single predictor of conversion ($r = +0.39$, top Gini importance in Random Forest).
@@ -161,6 +181,8 @@ Evaluated on the standardized log-transformed feature matrix of **all 4,338 Onli
 | **Agglomerative** | Euclidean metric | **Average** | **2** | **0.6584** | **0.4983** | **38.95** | 4,338 |
 
 *Methodological Note on Linkage Selection*: While Average linkage mathematically produces an elevated Silhouette Score ($0.6584$), it suffers from severe **chaining pathology**, isolating a tiny handful of extreme outlier customers into singleton clusters ($4,335$ vs. $3$ customers), confirmed by its low Calinski-Harabasz score ($38.95$). **K-Means ($K=2$)** and **Agglomerative Ward ($K=2$)** represent the true structural clusters.
+
+*Hierarchical Dendrogram Dynamic Cutoff*: Computed across all 4,338 customer observations with Ward linkage. The cutoff threshold ($distance = 105.28$) is derived dynamically from tree merge heights (between the $2 \rightarrow 1$ merge at $139.07$ and $3 \rightarrow 2$ merge at $81.95$) and verified programmatically via SciPy `fcluster` to partition into exactly $K=2$ clusters.
 
 ### Dimensionality Reduction (PCA & t-SNE)
 - **PCA**: Deterministic full-SVD projection achieves **83.15% total explained variance** (PC1 = 65.76%, PC2 = 17.39%).

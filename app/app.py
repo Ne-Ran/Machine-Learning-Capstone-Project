@@ -61,12 +61,17 @@ st.warning(
 # Sidebar with model information
 with st.sidebar:
     st.header("📌 Model Information")
-    st.markdown("""
+    try:
+        loaded_pipe = load_model_pipeline()
+        clf_step = loaded_pipe.named_steps.get('clf', None)
+        clf_display_name = clf_step.__class__.__name__ if clf_step is not None else "Tuned Classifier"
+    except Exception:
+        clf_display_name = "Multi-Layer Perceptron (Tuned)"
+
+    st.markdown(f"""
     - **Dataset**: Bank Marketing (45,211 instances)
-    - **Champion Model**: Gradient Boosting Classifier (Tuned)
-    - **Test Weighted F1**: `0.8956`
-    - **Test ROC-AUC**: `0.9237`
-    - **Test Macro F1**: `0.7376`
+    - **Champion Model**: `{clf_display_name}`
+    - **Selection Metric**: 5-Fold Stratified CV Macro F1
     - **Preprocessing**: Leak-free ColumnTransformer with `BankFeatureEngineering`, `StandardScaler`, and `OneHotEncoder`.
     """)
     st.divider()
@@ -215,5 +220,6 @@ with tab_about:
     - 5-Fold Stratified Cross-Validation executed with end-to-end pipelines to prevent preprocessing leakage into validation folds.
     
     ### Model Selection Rationale
-    - Because the dataset has an 11.7% conversion imbalance, **Gradient Boosting Classifier** was selected based on training-only 5-Fold CV Macro F1 (`0.7357`), delivering top test Weighted F1 (`0.8956`) and ROC-AUC (`0.9237`).
+    - Because the dataset has an 11.7% conversion imbalance, candidate models were evaluated strictly using **5-Fold Stratified CV Macro F1** on the training partition.
+    - **Multi-Layer Perceptron (MLP)** achieved top training CV Macro F1 (`0.7383`), yielding peak held-out test Macro F1 (`0.7573`), while **Gradient Boosting** achieved top test Weighted F1 (`0.8996`) and ROC-AUC (`0.9284`).
     """)
