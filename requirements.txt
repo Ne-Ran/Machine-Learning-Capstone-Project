@@ -6,5 +6,6 @@ matplotlib==3.10.7
 seaborn==0.13.2
 joblib==1.5.3
 streamlit==1.51.0
+openpyxl==3.1.5
 jupyter
 notebook
