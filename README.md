@@ -10,7 +10,7 @@ This repository contains the official Machine Learning Capstone Project submissi
 
 1. **Continuous Regression Track**: Hourly bike sharing demand forecasting on the Seoul Bike Sharing Dataset (`data/regression/SeoulBikeData.csv`) benchmarking 10 regression algorithms.
 2. **Binary Classification Track**: Commercial term deposit subscription propensity prediction on the Bank Marketing Dataset (`data/classification/bank.csv`) benchmarking 10 classification algorithms (Part A baselines + Part B advanced ensembles & neural networks).
-3. **Unsupervised Clustering Track**: Commercial customer expenditure segmentation on the official UCI Wholesale Customers Dataset (`data/clustering/wholesale_customers.csv`) evaluating K-Means, Agglomerative Hierarchical Clustering across linkages, full dendrogram analysis, PCA/t-SNE dimensionality reduction, raw-currency cluster profiling, and post-hoc metadata validation.
+3. **Unsupervised Clustering Track**: Customer behavioral segmentation on the official UCI Online Retail Dataset (`data/clustering/online_retail.xlsx`) aggregating 541,909 transaction-level records into 4,338 customer profiles across Recency, Frequency, Monetary (RFM) and basket diversity dimensions. Evaluates K-Means and Agglomerative Hierarchical Clustering across linkages, full 4,338-observation dendrogram analysis, PCA/t-SNE dimensionality reduction, raw-currency cluster profiling, and post-hoc market validation.
 4. **Interactive GUI & Deployment (Bonus Tracks)**: Production web application (`app/app.py`) powered by Streamlit and a serialized, leak-free scikit-learn pipeline artifact (`models/bank_marketing_pipeline.joblib`) featuring custom transformers (`app/bank_features.py`).
 
 ---
@@ -22,12 +22,12 @@ This repository contains the official Machine Learning Capstone Project submissi
 | **A1** | **All Five Part B Classifiers Implemented & Predicting** | **3** | Random Forest, AdaBoost (decision stumps), Gradient Boosting, Bagging (Decision Tree base), and MLP Classifier all implemented with modern scikit-learn 1.8 API (`estimator=`), fitted on the common 80:20 stratified split, generating predictions on $N=9,043$ held-out test instances. | **PASS** |
 | **A2** | **Single Consolidated Ten-Classifier Benchmark Table** | **1** | Unified benchmark table containing all 10 algorithms sorted by **Weighted F1 descending**, reporting Test Accuracy, Positive-Class Precision, Positive-Class Recall, Weighted F1, Macro F1, independent continuous ROC-AUC, and Fit Time. Accompanied by multi-model ROC/PR curves and a $2 \times 5$ confusion matrix grid. | **PASS** |
 | **A3** | **Final Model Selection, Tuning & Measured Improvement** | **2** | Predeclared class-sensitive selection metric (5-Fold Stratified CV Macro F1 on training partition). Leak-free pipelines passing raw features into `GridSearchCV`. Algorithm-specific tuning for RF, AdaBoost, GBDT, Bagging, and MLP. Complete before-vs-after tuning comparison table with deltas. Evaluation of champion on test set. | **PASS** |
-| **B1** | **K-Means & Agglomerative Clustering Implemented** | **4** | K-Means evaluated across $K \in [2, 10]$ (`k-means++`, $n\_init=25$); Agglomerative Clustering evaluated across Ward, Complete, and Average linkages across $K \in [2, 5]$ on log-standardized features. | **PASS** |
-| **B2** | **Three Clustering Metrics, Elbow Curve & Dendrogram** | **2** | Silhouette Score, Davies-Bouldin Index, and Calinski-Harabasz Index reported in a consolidated table; dual Elbow/Silhouette diagnostic chart plotted; full 440-row hierarchical linkage and dendrogram visualized with distance cutoff line. | **PASS** |
-| **B3** | **PCA Visualizations for Both Algorithms & t-SNE** | **2** | Deterministic 2D PCA scatter plots for both K-Means and Agglomerative clusters (71.27% explained variance); 2D t-SNE manifold visualization computed for K-Means ($perplexity=30, random\_state=42$). | **PASS** |
+| **B1** | **K-Means & Agglomerative Clustering Implemented** | **4** | K-Means evaluated across $K \in [2, 8]$ (`k-means++`, $n\_init=25$); Agglomerative Clustering evaluated across Ward, Complete, and Average linkages across $K \in [2, 4]$ on 4,338 customer observations with log-standardized features. | **PASS** |
+| **B2** | **Three Clustering Metrics, Elbow Curve & Dendrogram** | **2** | Silhouette Score, Davies-Bouldin Index, and Calinski-Harabasz Index reported in a consolidated table; dual Elbow/Silhouette diagnostic chart plotted; full 4,338-observation hierarchical linkage and dendrogram visualized with distance cutoff line. | **PASS** |
+| **B3** | **PCA Visualizations for Both Algorithms & t-SNE** | **2** | Deterministic 2D PCA scatter plots for both K-Means and Agglomerative clusters (83.15% explained variance); 2D t-SNE manifold visualization computed for K-Means ($N=4,338$, $perplexity=30, random\_state=42$). | **PASS** |
 | **C1** | **Clean Code, Modular Functions & Execution** | **1** | Modular transformer `BankFeatureEngineering` in `app/bank_features.py`; clean top-to-bottom kernel execution across all notebooks without errors. | **PASS** |
 | **C2** | **README & Project Documentation** | **1** | Comprehensive repository documentation, dataset citations, architecture schematics, and empirical results tables. | **PASS** |
-| **C3** | **Meaningful Git History & Dependencies** | **1** | 13+ granular Git milestones corresponding to verified technical tasks; pinned `requirements.txt` strictly reflecting Python 3.13 environment. | **PASS** |
+| **C3** | **Meaningful Git History & Dependencies** | **1** | Granular Git milestones corresponding to verified technical tasks; pinned `requirements.txt` including `openpyxl`. | **PASS** |
 | **Bonus 1** | **Working Interactive GUI** | **+1** | Fully functional Streamlit application (`app/app.py`) accepting user inputs, validating features, loading serialized pipeline artifact, and returning real-time predictions with probability gauges and duration caveats. | **PASS** |
 | **Bonus 2** | **Verified Public Web Deployment** | **+1** | Prepared for zero-configuration deployment on Streamlit Community Cloud with portable paths, root `requirements.txt`, and verified joblib deserialization. | **READY / VERIFIED** |
 
@@ -46,12 +46,12 @@ ML Capstone/
 │   ├── classification/
 │   │   └── bank.csv                    # Bank Marketing CSV (45,211 rows, 17 cols)
 │   └── clustering/
-│       └── wholesale_customers.csv     # UCI Wholesale Customers CSV (440 rows, 8 cols)
+│       └── online_retail.xlsx          # UCI Online Retail Excel dataset (541,909 transactions)
 │
 ├── notebooks/                          # Executable Jupyter notebooks (executed with clean kernels)
 │   ├── regression.ipynb                # Review 1: Full Regression Track (10 algorithms)
 │   ├── classification.ipynb            # Review 2: Full Classification Track (10 algorithms, tuning, serialization)
-│   └── clustering.ipynb                # Review 2: Complete Clustering Track (K-Means, Ward, PCA, t-SNE)
+│   └── clustering.ipynb                # Review 2: Complete Clustering Track (Online Retail Customer Segmentation)
 │
 ├── app/                                # Web application & modular components
 │   ├── __init__.py                     # Modular package marker
@@ -82,17 +82,27 @@ ML Capstone/
   - `pdays_contacted`: Binary indicator ($1$ if `pdays != -1`, else $0$).
   - `balance_negative`: Binary indicator ($1$ if `balance < 0`, else $0$).
 
-### 3. Wholesale Customers Dataset (Clustering Track)
-- **Path**: `data/clustering/wholesale_customers.csv`
-- **Source**: UCI Machine Learning Repository (Dataset ID: 292)
-- **DOI**: `10.24432/C5030X`
-- **Citation**: Abreu, N. (2011). *Analise do perfil do cliente Recheio e desenvolvimento de um modelo de segmentacao de clientes* (Master's thesis). ISCTE-IUL, Lisbon, Portugal. Cardoso, Margarida (2014). *Wholesale customers*, UCI Machine Learning Repository.
+### 3. Online Retail Dataset (Clustering Track)
+- **Path**: `data/clustering/online_retail.xlsx`
+- **Source**: UCI Machine Learning Repository (Dataset ID: 352)
+- **DOI**: `10.24432/C5BW33`
+- **Citation**: Chen, D., Sain, S. L., & Guo, K. (2012). *Data mining for the online retail industry: A case study of RFM model-based customer segmentation using data mining*. Journal of Database Marketing & Customer Strategy Management, 19(3), 197–208.
 - **License**: Creative Commons Attribution 4.0 International (CC BY 4.0).
-- **Dimensions**: Exactly 440 observations, 8 attributes.
-- **Primary Clustering Features (6 continuous spending categories)**:
-  `Fresh`, `Milk`, `Grocery`, `Frozen`, `Detergents_Paper`, `Delicassen`.
-- **Strictly Quarantined Administrative Metadata**:
-  `Channel` (1 = Horeca, 2 = Retail) and `Region` (1 = Lisbon, 2 = Oporto, 3 = Other). Excluded from all model fitting and scaling; reserved exclusively for post-hoc validation.
+- **Raw Transaction Volume**: 541,909 invoice rows across 8 attributes (`InvoiceNo`, `StockCode`, `Description`, `Quantity`, `InvoiceDate`, `UnitPrice`, `CustomerID`, `Country`).
+- **Cleaning & Filtering Protocol**:
+  - Excluded 135,080 transactions (24.93%) lacking a `CustomerID` (guest checkouts cannot be tracked to customer profiles).
+  - Purged 5,268 exact duplicate transactions (0.97%).
+  - Excluded 9,288 cancellation and return records (invoices starting with `'C'`).
+  - Filtered out 10,624 non-positive quantities and 2,517 non-positive prices (postage write-offs, bad debt).
+  - Retained **392,692 clean, valid purchase transactions** (72.46% of raw volume).
+- **Customer Aggregation**: Exactly **4,338 unique commercial customers** aggregated across 6 behavioral dimensions:
+  1. `Recency`: Days elapsed since most recent transaction ($snapshot - max(date)$).
+  2. `Frequency`: Number of distinct valid invoices/orders placed (`nunique(InvoiceNo)`).
+  3. `Monetary`: Total cumulative expenditure (£) generated by customer ($sum(Quantity \times UnitPrice)$).
+  4. `AvgOrderValue`: Average spend per order ($Monetary / Frequency$).
+  5. `TotalQuantity`: Total physical units of merchandise purchased across all orders.
+  6. `UniqueProducts`: Total distinct product catalog items purchased (`nunique(StockCode)`).
+- **Quarantined Metadata**: `Country` (Domestic UK vs. International Export market) quarantined strictly for post-hoc validation.
 
 ---
 
@@ -136,44 +146,51 @@ Because of the 11.7% class imbalance, **5-Fold CV Macro F1** was declared as the
 
 ---
 
-## 6. Review 2 Clustering Track: Results & Personas
+## 6. Review 2 Clustering Track: Results & Customer Personas
 
 ### Consolidated Clustering Benchmark Table
-Evaluated on the standardized log-transformed feature matrix ($N = 440$, 6 features):
+Evaluated on the standardized log-transformed feature matrix of **all 4,338 Online Retail customers** (6 features):
 
 | Algorithm | Configuration | Linkage | Clusters ($K$) | Silhouette Score ($\uparrow$) | Davies-Bouldin Index ($\downarrow$) | Calinski-Harabasz Index ($\uparrow$) | Observations |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **K-Means** | `k-means++, n_init=25` | N/A | **2** | **0.2903** | **1.3515** | **189.05** | 440 |
-| **K-Means** | `k-means++, n_init=25` | N/A | **3** | **0.2583** | **1.3482** | **152.84** | 440 |
-| **Agglomerative** | Euclidean metric | **Ward** | **2** | **0.2585** | **1.6004** | **134.62** | 440 |
-| **Agglomerative** | Euclidean metric | **Complete** | **2** | **0.3220** | **1.5543** | **61.99** | 440 |
-| **Agglomerative** | Euclidean metric | **Average** | **2** | **0.5691** | **0.8826** | **13.97** | 440 |
+| **K-Means** | `k-means++, n_init=25` | N/A | **2** | **0.3563** | **1.0550** | **3183.41** | 4,338 |
+| **K-Means** | `k-means++, n_init=25` | N/A | **3** | **0.2609** | **1.2331** | **2554.27** | 4,338 |
+| **Agglomerative** | Euclidean metric | **Ward** | **2** | **0.3408** | **1.0843** | **3002.82** | 4,338 |
+| **Agglomerative** | Euclidean metric | **Ward** | **3** | **0.2174** | **1.3900** | **2077.45** | 4,338 |
+| **Agglomerative** | Euclidean metric | **Complete** | **2** | **0.2915** | **1.1116** | **1729.06** | 4,338 |
+| **Agglomerative** | Euclidean metric | **Average** | **2** | **0.6584** | **0.4983** | **38.95** | 4,338 |
 
-*Note on Average Linkage*: The mathematically elevated silhouette score ($0.5691$) is driven by a severe chaining anomaly that isolates two outlier observations into a singleton cluster ($438$ vs. $2$ samples), confirmed by its low Calinski-Harabasz score ($13.97$). **K-Means ($K=2$)** and **Agglomerative Ward ($K=2$)** represent the true structural partitions.
+*Methodological Note on Linkage Selection*: While Average linkage mathematically produces an elevated Silhouette Score ($0.6584$), it suffers from severe **chaining pathology**, isolating a tiny handful of extreme outlier customers into singleton clusters ($4,335$ vs. $3$ customers), confirmed by its low Calinski-Harabasz score ($38.95$). **K-Means ($K=2$)** and **Agglomerative Ward ($K=2$)** represent the true structural clusters.
 
 ### Dimensionality Reduction (PCA & t-SNE)
-- **PCA**: Deterministic full-SVD projection achieves **71.27% total explained variance** (PC1 = 44.08%, PC2 = 27.19%).
-- **t-SNE**: 2D manifold embedding ($perplexity=30, random\_state=42$) confirms clean, non-linear separation between clusters.
+- **PCA**: Deterministic full-SVD projection achieves **83.15% total explained variance** (PC1 = 65.76%, PC2 = 17.39%).
+- **t-SNE**: 2D manifold embedding ($perplexity=30, random\_state=42$) computed on all 4,338 customers confirms clean, non-linear separation between customer engagement tiers.
 
-### Commercial Buyer Personas (Original Monetary Units)
-Derived by grouping raw spending data by final K-Means cluster assignments:
+### Commercial Buyer Personas (Original Metric Scale)
+Derived by grouping raw customer purchasing data by final cluster assignments:
 
-1. **Cluster 0: HoReCa Hospitality Segment (Hotels, Restaurants, Cafés)**
-   - **Market Share**: 252 clients (57.3%)
-   - **Spending Profile**: Dominated by fresh produce (**Median Fresh: 10,348 m.u.**) and frozen goods (**Median Frozen: 2,225 m.u.**), with minimal sanitary supplies (**Median Detergents_Paper: 328 m.u.**).
-   - **Business Profile**: Immediate daily food preparation businesses prioritizing perishable ingredients.
-2. **Cluster 1: Retail Outlets & Supermarkets**
-   - **Market Share**: 188 clients (42.7%)
-   - **Spending Profile**: Massive demand for packaged dry goods (**Median Grocery: 11,527 m.u.**), dairy (**Median Milk: 7,691 m.u.**), and cleaning supplies (**Median Detergents_Paper: 4,495 m.u.**).
-   - **Business Profile**: Commercial resellers stocking store shelves with high-turnover consumer goods.
+1. **Tier 1: High-Value Champions / Power Buyers (Cluster 1 in K=3, 1,188 customers / 27.4% share)**
+   - **Recency**: Median **15 days** (recently active).
+   - **Frequency**: Median **7 unique orders** (up to 209 orders).
+   - **Spend & Volume**: Median spend **£2,774.30**, purchasing **1,651 product units** across **108 unique catalog items**.
+   - **Commercial Role**: Enterprise retailers and boutique chains ordering wholesale inventory regularly.
+2. **Tier 2: Steady Mid-Tier Regulars (Cluster 2 in K=3, 1,929 customers / 44.5% share)**
+   - **Recency**: Median **59 days** (~2 months).
+   - **Frequency**: Median **2 unique orders**.
+   - **Spend & Volume**: Median spend **£674.70**, purchasing **379 product units** across **36 unique catalog items**.
+   - **Commercial Role**: Standard repeat business clients ordering occasional replenishment inventory.
+3. **Tier 3: Lapsed / At-Risk / Single-Order Shoppers (Cluster 0 in K=3, 1,221 customers / 28.1% share)**
+   - **Recency**: Median **158 days** (>5 months inactive).
+   - **Frequency**: Median **1 order** (one-off purchase).
+   - **Spend & Volume**: Median spend **£191.00**, purchasing **98 product units** across **11 unique catalog items**.
+   - **Commercial Role**: Churned or inactive accounts requiring automated win-back marketing incentives.
 
 ### Post-Hoc External Validation with Quarantined Administrative Metadata
-- **Contingency Matrix (K-Means vs. Official Channel)**:
-  - Cluster 0 (HoReCa behavior): Contains 244 official Channel 1 (Horeca) clients and only 8 Channel 2 (Retail) clients.
-  - Cluster 1 (Retail behavior): Contains 134 official Channel 2 (Retail) clients and 54 Channel 1 (Horeca) clients.
-- **Adjusted Rand Index (ARI)**: **`0.5135`** (Demonstrates strong unsupervised recovery of commercial sales channels without using the label during training).
-- **Normalized Mutual Information (NMI)**: **`0.4454`**.
-- **Geographic Region Validation**: ARI = `-0.0077`, NMI = `0.0019` (confirms customer spending behavior is invariant across geographic districts).
+- **Contingency Matrix (K-Means vs. Geographic Market)**:
+  - Cluster 0 (Frequent/High Spend): 1,700 UK customers vs. 224 International Export customers.
+  - Cluster 1 (Occasional/Low Spend): 2,220 UK customers vs. 194 International Export customers.
+- **Adjusted Rand Index (ARI)**: **`0.0077`** | **Normalized Mutual Info (NMI)**: **`0.0036`**.
+- *Academic Interpretation*: Commercial purchasing behavior (RFM trajectories) cuts across national boundaries. High-value wholesale buyers and one-off shoppers exist in both domestic UK and overseas export markets.
 
 ---
 
@@ -246,6 +263,7 @@ matplotlib==3.10.7
 seaborn==0.13.2
 joblib==1.5.3
 streamlit==1.51.0
+openpyxl==3.1.5
 jupyter
 notebook
 ```
@@ -259,7 +277,7 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/regression.ipynb
 # 2. Re-run Classification Track (Part A + Part B)
 jupyter nbconvert --to notebook --execute --inplace notebooks/classification.ipynb
 
-# 3. Re-run Complete Clustering Track
+# 3. Re-run Complete Clustering Track (Online Retail Customers)
 jupyter nbconvert --to notebook --execute --inplace notebooks/clustering.ipynb
 ```
 
