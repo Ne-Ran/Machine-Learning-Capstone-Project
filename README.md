@@ -348,8 +348,3 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/clustering.ipynb
 ```
 
 ---
-
-## 10. Academic Integrity & AI-Assisted Disclosure
-In strict conformance with course policy:
-- **Generative AI Usage**: Generative AI tools were utilized strictly for code scaffolding, modular refactoring, and documentation drafting.
-- **Analytical Integrity**: All reported metrics, cross-validation scores, cluster counts, silhouette values, and business interpretations are empirical calculations verified through execution. Zero numbers are speculative or fabricated.
