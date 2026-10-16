@@ -267,49 +267,6 @@ The application is pre-configured for deployment on **Render Web Services** usin
 #### Service Specifications:
 - **Hosting Platform**: Render Web Services ([render.com](https://render.com))
 - **Environment**: Native Python Runtime (`PYTHON_VERSION=3.11.9`)
-- **Plan**: `free` (Render Free Web Service)
-- **Region**: `singapore`
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `python -m streamlit run app/app.py --server.address 0.0.0.0 --server.port $PORT`
-- **Health Check Endpoint**: `/_stcore/health` (verified HTTP 200 OK)
-
-#### Free-Tier Cold-Start Limitation:
-> [!NOTE]
-> **Free-Tier Inactivity Spin-Down**:
-> Render's Free tier automatically spins down web services after **15 minutes of inactivity** to conserve resources. Upon receiving a new incoming HTTP request, the container automatically spins up within **~50 seconds**, after which it serves requests with instant sub-second response times.
-
-#### Step-by-Step Render Deployment Instructions:
-
-**Method A: One-Click Blueprint Deployment (Recommended)**
-1. Sign in to your [Render Dashboard](https://dashboard.render.com/) with your GitHub account (`Ne-Ran`).
-2. Click **New +** in the top navigation bar and select **Blueprint**.
-3. Connect your GitHub repository: `Ne-Ran/Machine-Learning-Capstone-Project`.
-4. Render will automatically detect and parse [`render.yaml`](render.yaml):
-   - Service Name: `bank-marketing-predictor`
-   - Runtime: `Python` (pinned to 3.11.9)
-   - Plan: `Free`
-   - Region: `Singapore`
-5. Click **Apply**. Render will automatically provision the container, execute `pip install -r requirements.txt`, verify the `/_stcore/health` endpoint, and launch your live service.
-
-**Method B: Manual Web Service Creation**
-1. In Render Dashboard, click **New +** $\rightarrow$ **Web Service**.
-2. Connect `Ne-Ran/Machine-Learning-Capstone-Project`, branch `main`.
-3. Configure the following fields:
-   - **Name**: `bank-marketing-predictor`
-   - **Region**: `Singapore`
-   - **Runtime**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `python -m streamlit run app/app.py --server.address 0.0.0.0 --server.port $PORT`
-   - **Instance Type**: `Free`
-4. Under **Advanced** $\rightarrow$ **Add Environment Variable**:
-   - Key: `PYTHON_VERSION`, Value: `3.11.9`
-   - **Health Check Path**: `/_stcore/health`
-5. Click **Deploy Web Service**.
-
-- **Deployment Status**: Blueprint verified, portable paths verified, model deserialization verified, local health check verified.
-- **Public URL**: *Generated upon initial deployment in Render Dashboard (e.g. `https://bank-marketing-predictor.onrender.com`)*.
-
----
 
 ## 9. Environment Setup & Execution Instructions
 
